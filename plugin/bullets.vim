@@ -814,19 +814,22 @@ command! RenumberList call <SID>renumber_whole_list()
 " Changing outline level ---------------------------------- {{{
 fun! s:change_bullet_level(direction)
   let l:lnum = line('.')
+  let l:col  = col('.')
   let l:curr_line = s:parse_bullet(l:lnum, getline(l:lnum))
 
   if a:direction == 1
     if l:curr_line != [] && indent(l:lnum) == 0
       " Promoting a bullet at the highest level will delete the bullet
       call setline(l:lnum, l:curr_line[0].text_after_bullet)
-      execute 'normal! $'
+      call cursor(line('.'), l:col - len(l:curr_line[0].leading_space) - len(l:curr_line[0].bullet) - len(l:curr_line[0].trailing_space))
       return
     else
-      execute 'normal! <<$'
+      execute 'normal! <<'
+      call cursor(line('.'), l:col - shiftwidth())
     endif
   else
-    execute 'normal! >>$'
+    execute 'normal! >>'
+    call cursor(line('.'), l:col + shiftwidth())
   endif
 
   if l:curr_line == []
@@ -921,7 +924,6 @@ fun! s:change_bullet_level(direction)
   " Apply the new bullet
   call setline(l:lnum, l:next_bullet_str)
 
-  execute 'normal! $'
   return
 endfun
 
